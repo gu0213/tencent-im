@@ -55,14 +55,16 @@ type Options struct {
 	Expiration int    // UserSig过期时间
 }
 
-func NewClient(opt *Options) Client {
+func NewClient(opt *Options, domain string) Client {
 	rand.Seed(time.Now().UnixNano())
 	c := new(client)
 	c.opt = opt
 	c.client = http.NewClient()
 	c.client.SetContentType(http.ContentTypeJson)
-	c.client.SetBaseUrl(defaultBaseUrl)
-
+	if domain == "" {
+		domain = DomainChina
+	}
+	c.client.SetBaseUrl(domain)
 	return c
 }
 
