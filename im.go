@@ -8,6 +8,7 @@
 package im
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -113,7 +114,7 @@ type (
 
 func NewIM(opt *Options, domain string) IM {
 	if domain == "" {
-		domain = DomainChina
+		domain = fmt.Sprintf("https://%s", DomainChina)
 	}
 	return &im{opt: opt, client: core.NewClient(&core.Options{
 		AppId:      opt.AppId,
