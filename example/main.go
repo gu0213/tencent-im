@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	im "github.com/gu0213/tencent-im"
 	"log"
 	"net/http"
 
@@ -21,7 +22,7 @@ func main() {
 		AppId:     1400579830,                                                         // 无效的AppId,请勿直接使用
 		AppSecret: "0d2a321b087fdb8fd5ed5ea14fe0489139086eb1b03541283fc9feeab8f2bfd3", // 无效的AppSecret,请勿直接使用
 		UserId:    "administrator",                                                    // 管理员用户账号，请在腾讯云IM后台设置管理账号
-	})
+	}, "")
 
 	// 导入账号
 	if err := tim.Account().ImportAccount(&account.Account{
@@ -56,7 +57,7 @@ func main() {
 	})
 
 	// 启动服务器
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8088", nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }

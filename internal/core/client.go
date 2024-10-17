@@ -61,9 +61,6 @@ func NewClient(opt *Options, domain string) Client {
 	c.opt = opt
 	c.client = http.NewClient()
 	c.client.SetContentType(http.ContentTypeJson)
-	if domain == "" {
-		domain = DomainChina
-	}
 	c.client.SetBaseUrl(domain)
 	return c
 }
