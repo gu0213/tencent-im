@@ -9,6 +9,7 @@ package im_test
 
 import (
 	"fmt"
+	im "github.com/gu0213/tencent-im"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -44,7 +45,7 @@ func NewIM() im.IM {
 		AppSecret:  "0d2a321b087fdb8fd5ed5ea14fe0489139086eb1b03541774fc9feeab8f2bfd3",
 		UserId:     "administrator",
 		Expiration: 3600,
-	})
+	}, im.DomainChina)
 }
 
 // 处理错误
