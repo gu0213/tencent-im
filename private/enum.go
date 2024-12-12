@@ -13,8 +13,9 @@ import (
 
 const (
 	// 同步至其他设备
-	SyncOtherMachineYes = enum.SyncOtherMachineYes // 把消息同步到From_Account在线终端和漫游上
-	SyncOtherMachineNo  = enum.SyncOtherMachineNo  // 消息不同步至From_Account
+	SyncOtherMachineFromAccountYes = enum.SyncOtherMachineFromAccountYes // 把消息同步到From_Account在线终端和漫游上
+	SyncOtherMachineFromAccountNo  = enum.SyncOtherMachineFromAccountNo  // 消息不同步至From_Account
+	SyncOtherMachineToAccountNo    = enum.SyncOtherMachineToAccountNo    // 消息不同步至To_Account
 
 	// 推送标识
 	PushFlagYes = enum.PushFlagYes // 正常推送

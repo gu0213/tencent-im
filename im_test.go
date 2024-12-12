@@ -8,9 +8,12 @@
 package im_test
 
 import (
+	"errors"
 	"fmt"
 	im "github.com/gu0213/tencent-im"
 	"math/rand"
+	"reflect"
+	"runtime"
 	"strconv"
 	"testing"
 	"time"
@@ -903,7 +906,7 @@ func TestIm_Private_ImportMessage(t *testing.T) {
 	message.SetSender("assistant")
 	message.SetReceivers("test1")
 	message.SetTimestamp(time.Now().Unix())
-	message.SetSyncOtherMachine(private.SyncOtherMachineYes)
+	message.SetSyncOtherMachine(private.SyncOtherMachineFromAccountYes)
 	message.SetContent(private.MsgTextContent{
 		Text: "Hello world",
 	})
@@ -1508,4 +1511,51 @@ func TestIm_RecentContact_DeleteSession(t *testing.T) {
 		handleError(t, "recentcontact.DeleteSession", err)
 	}
 	t.Log("Success")
+}
+
+func TestDefer(t *testing.T) {
+	defer func() {
+		fmt.Println("123")
+	}()
+	panic(errors.New("erros"))
+}
+
+func TestCaller(t *testing.T) {
+	getCallerInfo(1)
+}
+
+// 获取调用者信息的函数
+func getCallerInfo(skip int) {
+	// 获取调用栈信息，参数为需要跳过的帧数
+	pc := make([]uintptr, 1)
+	n := runtime.Callers(skip+1, pc)
+	if n == 0 {
+		return
+	}
+
+	frames := runtime.CallersFrames(pc[:n])
+	frame, more := frames.Next()
+
+	// 打印调用者信息
+	fmt.Printf("Function: %s\n", frame.Function)
+	fmt.Printf("File: %s\n", frame.File)
+	fmt.Printf("Line: %d\n", frame.Line)
+	if more {
+		fmt.Println("More frames available...")
+	}
+}
+
+type User struct{}
+
+func TestJsonUn(t *testing.T) {
+	u := make([]*User, 0)
+	fmt.Printf("%T %v %t\n", u, u, u == nil)
+	valf(u)
+}
+
+func valf(val interface{}) {
+	if reflect.ValueOf(val).IsNil() {
+		fmt.Println("val is nil")
+	}
+	fmt.Printf("%T %v %t\n", val, val, val == nil)
 }

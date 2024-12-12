@@ -66,8 +66,9 @@ const (
 	AdminForbidTypeSendOut types.AdminForbidType = "AdminForbid_Type_SendOut" // 禁止该用户发起加好友请求
 
 	// 同步至其他设备
-	SyncOtherMachineYes types.SyncOtherMachine = 1 // 把消息同步到From_Account在线终端和漫游上
-	SyncOtherMachineNo  types.SyncOtherMachine = 2 // 消息不同步至From_Account
+	SyncOtherMachineFromAccountYes types.SyncOtherMachine = 1 // 把消息同步到From_Account在线终端和漫游上
+	SyncOtherMachineFromAccountNo  types.SyncOtherMachine = 2 // 消息不同步至From_Account
+	SyncOtherMachineToAccountNo    types.SyncOtherMachine = 3 // 消息不同步至To_Account
 
 	// 推送标识
 	PushFlagYes types.PushFlag = 0 // 正常推送
