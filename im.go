@@ -114,14 +114,14 @@ type (
 
 func NewIM(opt *Options, domain string) IM {
 	if domain == "" {
-		domain = fmt.Sprintf("https://%s", DomainChina)
+		domain = DomainChina
 	}
 	return &im{opt: opt, client: core.NewClient(&core.Options{
 		AppId:      opt.AppId,
 		AppSecret:  opt.AppSecret,
 		UserId:     opt.UserId,
 		Expiration: opt.Expiration,
-	}, domain)}
+	}, fmt.Sprintf("https://%s", domain))}
 }
 
 // GetUserSig 获取UserSig签名
