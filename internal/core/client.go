@@ -10,10 +10,10 @@ package core
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"math/rand"
 	nethttp "net/http"
 	"net/http/httptrace"
+	"sync/atomic"
 	"time"
 
 	"github.com/gu0213/http"
@@ -65,34 +65,45 @@ type HTTPOptions struct {
 	MaxIdleConnsPerHost int
 	IdleConnTimeout     time.Duration
 	DisableKeepAlives   bool
+	// TraceLog 接收 HTTP 请求各阶段的诊断日志；为空时不启用跟踪。
+	TraceLog func(format string, args ...interface{})
 }
 
+var traceRequestID uint64
+
+// traceTransport 为每次 HTTP 请求附加阶段跟踪。
 type traceTransport struct {
 	base nethttp.RoundTripper
+	// logf 将跟踪事件交给调用方的日志系统。
+	logf func(format string, args ...interface{})
 }
 
+// RoundTrip 记录请求阶段并通过原有连接池发送请求。
 func (t *traceTransport) RoundTrip(req *nethttp.Request) (*nethttp.Response, error) {
 	started := time.Now()
+	requestID := atomic.AddUint64(&traceRequestID, 1)
 	trace := &httptrace.ClientTrace{
 		GotConn: func(info httptrace.GotConnInfo) {
-			log.Printf("got_conn elapsed=%s reused=%t", time.Since(started), info.Reused)
+			t.logf("im_http id=%d path=%s got_conn elapsed=%s reused=%t", requestID, req.URL.Path, time.Since(started), info.Reused)
 		},
 		ConnectDone: func(network, addr string, err error) {
-			log.Printf("tcp_done elapsed=%s err=%v", time.Since(started), err)
+			t.logf("im_http id=%d path=%s tcp_done elapsed=%s err=%v", requestID, req.URL.Path, time.Since(started), err)
 		},
 		TLSHandshakeDone: func(_ tls.ConnectionState, err error) {
-			log.Printf("tls_done elapsed=%s err=%v", time.Since(started), err)
+			t.logf("im_http id=%d path=%s tls_done elapsed=%s err=%v", requestID, req.URL.Path, time.Since(started), err)
 		},
 		WroteRequest: func(info httptrace.WroteRequestInfo) {
-			log.Printf("request_written elapsed=%s err=%v", time.Since(started), info.Err)
+			t.logf("im_http id=%d path=%s request_written elapsed=%s err=%v", requestID, req.URL.Path, time.Since(started), info.Err)
 		},
 		GotFirstResponseByte: func() {
-			log.Printf("first_byte elapsed=%s", time.Since(started))
+			t.logf("im_http id=%d path=%s first_byte elapsed=%s", requestID, req.URL.Path, time.Since(started))
 		},
 	}
 
 	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
-	return t.base.RoundTrip(req)
+	resp, err := t.base.RoundTrip(req)
+	t.logf("im_http id=%d path=%s round_trip_done elapsed=%s err=%v", requestID, req.URL.Path, time.Since(started), err)
+	return resp, err
 }
 
 func NewClient(opt *Options, domain string) Client {
@@ -109,7 +120,9 @@ func NewClient(opt *Options, domain string) Client {
 		transport.IdleConnTimeout = opt.HTTP.IdleConnTimeout
 		c.client.SetTimeout(opt.HTTP.Timeout)
 	}
-	c.client.Transport = &traceTransport{base: c.client.Transport}
+	if opt.HTTP != nil && opt.HTTP.TraceLog != nil {
+		c.client.Transport = &traceTransport{base: c.client.Transport, logf: opt.HTTP.TraceLog}
+	}
 	c.client.SetContentType(http.ContentTypeJson)
 	c.client.SetBaseUrl(domain)
 	return c

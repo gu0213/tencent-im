@@ -63,11 +63,12 @@ type (
 	}
 
 	HTTPOptions struct {
-		Timeout             time.Duration // 整个 HTTP 请求的最长耗时；0 表示不设置超时。
-		MaxIdleConns        int           // 所有主机合计允许保留的最大空闲连接数；0 表示不限制。
-		MaxIdleConnsPerHost int           // 每个主机允许保留的最大空闲连接数；0 使用 Go 默认值（2）。
-		IdleConnTimeout     time.Duration // 空闲连接可保留的最长时间；0 表示不因空闲超时关闭。
-		DisableKeepAlives   bool          // true 表示禁用 HTTP 连接复用；false 表示允许复用。
+		Timeout             time.Duration                            // 整个 HTTP 请求的最长耗时；0 表示不设置超时。
+		MaxIdleConns        int                                      // 所有主机合计允许保留的最大空闲连接数；0 表示不限制。
+		MaxIdleConnsPerHost int                                      // 每个主机允许保留的最大空闲连接数；0 使用 Go 默认值（2）。
+		IdleConnTimeout     time.Duration                            // 空闲连接可保留的最长时间；0 表示不因空闲超时关闭。
+		DisableKeepAlives   bool                                     // true 表示禁用 HTTP 连接复用；false 表示允许复用。
+		TraceLog            func(format string, args ...interface{}) // 可选的 HTTP 阶段日志回调；为空时不采集跟踪日志。
 	}
 
 	UserSig struct {
@@ -136,6 +137,7 @@ func NewIM(opt *Options, domain string) IM {
 			MaxIdleConnsPerHost: opt.HTTP.MaxIdleConnsPerHost,
 			IdleConnTimeout:     opt.HTTP.IdleConnTimeout,
 			DisableKeepAlives:   opt.HTTP.DisableKeepAlives,
+			TraceLog:            opt.HTTP.TraceLog,
 		},
 	}, fmt.Sprintf("https://%s", domain))}
 }
