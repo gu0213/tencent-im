@@ -130,6 +130,13 @@ func NewIM(opt *Options, domain string) IM {
 		AppSecret:  opt.AppSecret,
 		UserId:     opt.UserId,
 		Expiration: opt.Expiration,
+		HTTP: &core.HTTPOptions{
+			Timeout:             opt.HTTP.Timeout,
+			MaxIdleConns:        opt.HTTP.MaxIdleConns,
+			MaxIdleConnsPerHost: opt.HTTP.MaxIdleConnsPerHost,
+			IdleConnTimeout:     opt.HTTP.IdleConnTimeout,
+			DisableKeepAlives:   opt.HTTP.DisableKeepAlives,
+		},
 	}, fmt.Sprintf("https://%s", domain))}
 }
 
