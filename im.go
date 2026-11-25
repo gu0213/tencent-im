@@ -55,10 +55,19 @@ type (
 	}
 
 	Options struct {
-		AppId      int    // 应用SDKAppID，可在即时通信 IM 控制台 的应用卡片中获取。
-		AppSecret  string // 密钥信息，可在即时通信 IM 控制台 的应用详情页面中获取，具体操作请参见 获取密钥
-		UserId     string // 用户ID
-		Expiration int    // UserSig过期时间
+		AppId      int          // 应用SDKAppID，可在即时通信 IM 控制台 的应用卡片中获取。
+		AppSecret  string       // 密钥信息，可在即时通信 IM 控制台 的应用详情页面中获取，具体操作请参见 获取密钥
+		UserId     string       // 用户ID
+		Expiration int          // UserSig过期时间
+		HTTP       *HTTPOptions // http配置
+	}
+
+	HTTPOptions struct {
+		Timeout             time.Duration // 整个 HTTP 请求的最长耗时；0 表示不设置超时。
+		MaxIdleConns        int           // 所有主机合计允许保留的最大空闲连接数；0 表示不限制。
+		MaxIdleConnsPerHost int           // 每个主机允许保留的最大空闲连接数；0 使用 Go 默认值（2）。
+		IdleConnTimeout     time.Duration // 空闲连接可保留的最长时间；0 表示不因空闲超时关闭。
+		DisableKeepAlives   bool          // true 表示禁用 HTTP 连接复用；false 表示允许复用。
 	}
 
 	UserSig struct {

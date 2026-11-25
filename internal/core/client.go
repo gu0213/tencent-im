@@ -10,10 +10,10 @@ package core
 import (
 	"fmt"
 	"math/rand"
+	nethttp "net/http"
 	"time"
 
 	"github.com/gu0213/http"
-
 	"github.com/gu0213/tencent-im/internal/enum"
 	"github.com/gu0213/tencent-im/internal/sign"
 	"github.com/gu0213/tencent-im/internal/types"
@@ -53,6 +53,15 @@ type Options struct {
 	AppSecret  string // 密钥信息，可在即时通信 IM 控制台 的应用详情页面中获取，具体操作请参见 获取密钥
 	UserId     string // 用户ID
 	Expiration int    // UserSig过期时间
+	HTTP       *HTTPOptions
+}
+
+type HTTPOptions struct {
+	Timeout             time.Duration
+	MaxIdleConns        int
+	MaxIdleConnsPerHost int
+	IdleConnTimeout     time.Duration
+	DisableKeepAlives   bool
 }
 
 func NewClient(opt *Options, domain string) Client {
@@ -60,6 +69,16 @@ func NewClient(opt *Options, domain string) Client {
 	c := new(client)
 	c.opt = opt
 	c.client = http.NewClient()
+
+	if opt.HTTP != nil {
+		transport := c.client.Transport.(*nethttp.Transport)
+		transport.DisableKeepAlives = opt.HTTP.DisableKeepAlives
+		transport.MaxIdleConns = opt.HTTP.MaxIdleConns
+		transport.MaxIdleConnsPerHost = opt.HTTP.MaxIdleConnsPerHost
+		transport.IdleConnTimeout = opt.HTTP.IdleConnTimeout
+		c.client.SetTimeout(opt.HTTP.Timeout)
+	}
+
 	c.client.SetContentType(http.ContentTypeJson)
 	c.client.SetBaseUrl(domain)
 	return c
