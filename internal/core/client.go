@@ -8,9 +8,12 @@
 package core
 
 import (
+	"crypto/tls"
 	"fmt"
+	"log"
 	"math/rand"
 	nethttp "net/http"
+	"net/http/httptrace"
 	"time"
 
 	"github.com/gu0213/http"
@@ -64,6 +67,34 @@ type HTTPOptions struct {
 	DisableKeepAlives   bool
 }
 
+type traceTransport struct {
+	base nethttp.RoundTripper
+}
+
+func (t *traceTransport) RoundTrip(req *nethttp.Request) (*nethttp.Response, error) {
+	started := time.Now()
+	trace := &httptrace.ClientTrace{
+		GotConn: func(info httptrace.GotConnInfo) {
+			log.Printf("got_conn elapsed=%s reused=%t", time.Since(started), info.Reused)
+		},
+		ConnectDone: func(network, addr string, err error) {
+			log.Printf("tcp_done elapsed=%s err=%v", time.Since(started), err)
+		},
+		TLSHandshakeDone: func(_ tls.ConnectionState, err error) {
+			log.Printf("tls_done elapsed=%s err=%v", time.Since(started), err)
+		},
+		WroteRequest: func(info httptrace.WroteRequestInfo) {
+			log.Printf("request_written elapsed=%s err=%v", time.Since(started), info.Err)
+		},
+		GotFirstResponseByte: func() {
+			log.Printf("first_byte elapsed=%s", time.Since(started))
+		},
+	}
+
+	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
+	return t.base.RoundTrip(req)
+}
+
 func NewClient(opt *Options, domain string) Client {
 	rand.Seed(time.Now().UnixNano())
 	c := new(client)
@@ -78,7 +109,7 @@ func NewClient(opt *Options, domain string) Client {
 		transport.IdleConnTimeout = opt.HTTP.IdleConnTimeout
 		c.client.SetTimeout(opt.HTTP.Timeout)
 	}
-
+	c.client.Transport = &traceTransport{base: c.client.Transport}
 	c.client.SetContentType(http.ContentTypeJson)
 	c.client.SetBaseUrl(domain)
 	return c
